@@ -1,2 +1,2 @@
 #!/bin/sh
-clang main.c src/* -I./include -ldl
+clang main.c -o main.exec -I/usr/include `pkg-config --libs glfw3 glew --cflags cglm`
