@@ -7,7 +7,7 @@
 #include <cglm/cglm.h>
 #include <cglm/call.h>
 
-unsigned int VBO, VAO;
+unsigned int EBO ,VBO, VAO;
 unsigned int vertexShader, fragmentShader, shaderProgram;
 
 char* readFile(const char path[])
@@ -89,6 +89,9 @@ void attachShaders()
 		fprintf(stderr, "Error linking to program: '%s'\n", infoLog);
 		exit(-1);
 	}
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 }
 
 int main(void)
@@ -123,26 +126,50 @@ int main(void)
 
 	attachShaders();
 
-	glGenBuffers(1, &VBO);
-	glGenVertexArrays(1, &VAO);
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
+		0.5f,  0.5f, 0.0f,
 		0.5f, -0.5f, 0.0f,
-		0.0f,  0.5f, 0.0f
+		-0.5f, -0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f
 	};
+	unsigned int indices[] = {
+		0, 1, 3, // triangle 1
+		1, 2, 3  // triangle 2
+	};
+
+	// Allocate GPU Memory
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	glGenVertexArrays(1, &VAO);
+
+	// Start editing Vertex Array Object
 	glBindVertexArray(VAO);
+
+	// Copy vertices array to Vertex Buffer Object
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Copy index array to Element Buffer Object
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	// Set and enable aPos vec3 in shader
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.05f, 0.0f, 0.0f, 1.0f);
+		// Clear screen
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Use program and draw square
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// Uncomment to use wireframe Mode
+		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
