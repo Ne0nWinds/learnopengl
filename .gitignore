@@ -1,6 +1,7 @@
 # build
 main.exec
 
-# intellisense files
-.clangd/
+# clangd support files
+.clangd
+*.idx
 compile_commands.json

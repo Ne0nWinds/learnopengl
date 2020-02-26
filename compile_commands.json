@@ -1,4 +1,0 @@
-[
-	{ "directory": "/home/parker/Documents/learnopengl", "file": "main.c", "output": "/tmp/main-4cecea.o", "arguments": ["/usr/lib/llvm-9/bin/clang", "-xc", "main.c", "-I", "./include", "-ldl", "--target=x86_64-pc-linux-gnu"]},
-	{ "directory": "/home/parker/Documents/learnopengl", "file": "src/glad.c", "output": "/tmp/glad-1e9713.o", "arguments": ["/usr/lib/llvm-9/bin/clang", "-xc", "src/glad.c", "-I", "./include", "-ldl", "--target=x86_64-pc-linux-gnu"]}
-]

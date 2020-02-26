@@ -137,6 +137,8 @@ int main(void)
 		1, 2, 3  // triangle 2
 	};
 
+	printf("testing 123\n");
+
 	// Allocate GPU Memory
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
