@@ -1,0 +1,6 @@
+# build
+main.exec
+
+# intellisense files
+.clangd/
+compile_commands.json
