@@ -4,16 +4,21 @@ out vec4 FragColor;
 in vec3 outColor;
 in vec2 TexCoord;
 
-uniform sampler2D ourTexture;
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+uniform float alpha;
 
 void main()
 {
-	// for vanilla color
+	// vanilla color
 	// fragmentColor = vec4(outColor, 1.0);
 
-	// for finding color from texture
-    FragColor = texture(ourTexture, TexCoord);
+	// finding color from texture
+	// FragColor = texture(texture1, TexCoord);
 
-	// for overlaying color onto texture
-    // FragColor = texture(ourTexture, TexCoord) * vec4(outColor, 1.0);
+	// overlaying color onto texture
+	// FragColor = texture(texture1, TexCoord) * vec4(outColor, 1.0);
+
+	// overlay textures
+	FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), alpha);
 }

@@ -98,6 +98,27 @@ void attachShaders(unsigned int* shaderProgram, unsigned int vertexShader,unsign
 	glDeleteShader(fragmentShader);
 }
 
+void loadTexture(unsigned int* texture, const char path[], bool transparent)
+{
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (!data) {
+		stbi_image_free(data);
+		printf("failed to load texture\n");
+		exit(-1);
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearest neighbor minification
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear interpolated magnification
+	// set texture to data from jpg
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, (transparent) ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+}
+
 int main(void)
 {
 	if (!glfwInit())
@@ -125,21 +146,10 @@ int main(void)
 		return -1;
 	}
 
-	// load file to use as texture
-	int width, height, nrChannels;
-	unsigned char *data = stbi_load("./textures/container.jpg", &width, &height, &nrChannels, 0);
-	if (!data) {
-		printf("failed to load texture\n");
-	}
-
 	// allocate memory for texture in OpenGL
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	// set texture to data from jpg
-	glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(data);
+	unsigned int texture1, texture2;
+	loadTexture(&texture1, "./textures/container.jpg", false);
+	loadTexture(&texture2, "./textures/playstation.png", true);
 
 	compileShader(&vertexShader, GL_VERTEX_SHADER, "./shaders/vertex.shader");
 	compileShader(&fragmentShader, GL_FRAGMENT_SHADER, "./shaders/fragment.shader");
@@ -194,6 +204,9 @@ int main(void)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	glUseProgram(shaderProgram);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -201,16 +214,20 @@ int main(void)
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgram);
-
 	//	float timeValue = glfwGetTime();
 	//	float greenValue = (fmod(timeValue, 1) + 0.05f) - 0.05f;
 	//	int vertexColorLocation = glGetUniformLocation(shaderProgram, "uniformColor");
 	//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		float timeValue = glfwGetTime();
+		float alpha = sin(timeValue) / 2 + 0.5f;
 
+		glUniform1f(glGetUniformLocation(shaderProgram, "alpha"),alpha);
 		// Uncomment line below to use wireframe Mode
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
