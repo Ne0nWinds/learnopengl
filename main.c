@@ -1,11 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <cglm/cglm.h>
 #include <cglm/call.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "./src/stb_image.h"
 
 unsigned int EBO ,VBO, VAO;
 unsigned int vertexShader, fragmentShader, shaderProgram;
@@ -45,7 +49,7 @@ error:
 	free(str);
 	free(temp);
 	fclose(file);
-	printf("Not enough memory\n");
+	printf("Error reading file at path:\n%s\n", path);
 	exit(-1);
 }
 
@@ -73,19 +77,19 @@ void compileShader(GLuint* shader,GLenum type,const char path[])
 	}
 }
 
-void attachShaders()
+void attachShaders(unsigned int* shaderProgram, unsigned int vertexShader,unsigned int fragmentShader)
 {
-	shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	*shaderProgram = glCreateProgram();
+	glAttachShader(*shaderProgram, vertexShader);
+	glAttachShader(*shaderProgram, fragmentShader);
+	glLinkProgram(*shaderProgram);
 
 	int success = 0;
 	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	glGetProgramiv(*shaderProgram, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		glGetProgramInfoLog(*shaderProgram, 512, NULL, infoLog);
 		fprintf(stderr, "Error linking to program: '%s'\n", infoLog);
 		exit(-1);
 	}
@@ -121,23 +125,38 @@ int main(void)
 		return -1;
 	}
 
+	// load file to use as texture
+	int width, height, nrChannels;
+	unsigned char *data = stbi_load("./textures/container.jpg", &width, &height, &nrChannels, 0);
+	if (!data) {
+		printf("failed to load texture\n");
+	}
+
+	// allocate memory for texture in OpenGL
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	// set texture to data from jpg
+	glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+
 	compileShader(&vertexShader, GL_VERTEX_SHADER, "./shaders/vertex.shader");
 	compileShader(&fragmentShader, GL_FRAGMENT_SHADER, "./shaders/fragment.shader");
 
-	attachShaders();
+	attachShaders(&shaderProgram, vertexShader, fragmentShader);
 
 	float vertices[] = {
-		0.5f,  0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		-0.5f,  0.5f, 0.0f
+		// positions       colors            texture coords
+		0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f, 1.0f, 0.5f, 0.0f, 0.0f, 1.0f
 	};
 	unsigned int indices[] = {
 		0, 1, 3, // triangle 1
 		1, 2, 3  // triangle 2
 	};
-
-	printf("testing 123\n");
 
 	// Allocate GPU Memory
 	glGenBuffers(1, &VBO);
@@ -155,21 +174,44 @@ int main(void)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	// glVertexAttribPointer(
+	// 		location in shader
+	// 		number of data points needed for attribute (3 for rgb color)
+	// 		type (using floats for all)
+	// 		normalize values
+	// 		byte offset to between attributes
+	// 		byte offset to first attribute
+	// 	)
 	// Set and enable aPos vec3 in shader
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// Set and enable aColor vec3 in shader
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	// Set and enable aTextureCoord vec2 in shader
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	while (!glfwWindowShouldClose(window))
 	{
+
 		// Clear screen
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// Use program and draw square
 		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
-		// Uncomment to use wireframe Mode
+
+	//	float timeValue = glfwGetTime();
+	//	float greenValue = (fmod(timeValue, 1) + 0.05f) - 0.05f;
+	//	int vertexColorLocation = glGetUniformLocation(shaderProgram, "uniformColor");
+	//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
+		// Uncomment line below to use wireframe Mode
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);

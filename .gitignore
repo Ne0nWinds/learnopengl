@@ -5,3 +5,7 @@ main.exec
 .clangd
 *.idx
 compile_commands.json
+
+# src files
+src/*
+textures/*
