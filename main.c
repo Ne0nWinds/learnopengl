@@ -14,6 +14,10 @@
 unsigned int EBO ,VBO, VAO;
 unsigned int vertexShader, fragmentShader, shaderProgram;
 
+unsigned int windowWidth, windowHeight;
+
+const double to_radians = M_PI / 180;
+
 char* readFile(const char path[])
 {
 	unsigned int len = 1;
@@ -55,6 +59,8 @@ error:
 
 void resize_callback(GLFWwindow* window, int width, int height)
 {
+	windowWidth = width;
+	windowHeight = height;
 	glViewport(0,0,width,height);
 }
 
@@ -221,6 +227,22 @@ int main(void)
 		float timeValue = glfwGetTime();
 		float alpha = sin(timeValue) / 2 + 0.5f;
 
+		mat4 model;
+		glm_mat4_identity(model);
+		vec3 rotation =  {1.0f, 0.0f, 0.0f};
+		glm_rotate(model, -55.0f * to_radians, rotation);
+		mat4 view;
+		glm_mat4_identity(view);
+		vec3 translation =  {0.0f, 0.0f, -3.0f};
+		glm_translate(view, translation);
+		mat4 projection;
+		glm_mat4_identity(projection);
+		glm_perspective(to_radians * (45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f, projection);
+		
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, *model);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, *view);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, *projection);
 		glUniform1f(glGetUniformLocation(shaderProgram, "alpha"),alpha);
 		// Uncomment line below to use wireframe Mode
 		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
