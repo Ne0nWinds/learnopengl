@@ -151,6 +151,7 @@ int main(void)
 		glfwTerminate();
 		return -1;
 	}
+	glEnable(GL_DEPTH_TEST);
 
 	// allocate memory for texture in OpenGL
 	unsigned int texture1, texture2;
@@ -163,20 +164,64 @@ int main(void)
 	attachShaders(&shaderProgram, vertexShader, fragmentShader);
 
 	float vertices[] = {
-		// positions       colors            texture coords
-		0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f, 0.0f, 1.0f, 0.5f, 0.0f, 0.0f, 1.0f
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
-	unsigned int indices[] = {
-		0, 1, 3, // triangle 1
-		1, 2, 3  // triangle 2
+
+	float cubePositions[] = {
+		0.0f,  0.0f,  0.0f,
+		2.0f,  5.0f, -15.0f,
+		-1.5f, -2.2f, -2.5f,
+		-3.8f, -2.0f, -12.3f,
+		2.4f, -0.4f, -3.5f,
+		-1.7f,  3.0f, -7.5f,
+		1.3f, -2.0f, -2.5f,
+		1.5f,  2.0f, -2.5f,
+		1.5f,  0.2f, -1.5f,
+		-1.3f,  1.0f, -1.5f,
 	};
 
 	// Allocate GPU Memory
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 	glGenVertexArrays(1, &VAO);
 
 	// Start editing Vertex Array Object
@@ -185,10 +230,6 @@ int main(void)
 	// Copy vertices array to Vertex Buffer Object
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// Copy index array to Element Buffer Object
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// glVertexAttribPointer(
 	// 		location in shader
@@ -199,48 +240,43 @@ int main(void)
 	// 		byte offset to first attribute
 	// 	)
 	// Set and enable aPos vec3 in shader
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Set and enable aColor vec3 in shader
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
 	// Set and enable aTextureCoord vec2 in shader
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
+	mat4 model;
+	glm_mat4_identity(model);
 	while (!glfwWindowShouldClose(window))
 	{
 
 		// Clear screen
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//	float timeValue = glfwGetTime();
-	//	float greenValue = (fmod(timeValue, 1) + 0.05f) - 0.05f;
-	//	int vertexColorLocation = glGetUniformLocation(shaderProgram, "uniformColor");
-	//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		//	float timeValue = glfwGetTime();
+		//	float greenValue = (fmod(timeValue, 1) + 0.05f) - 0.05f;
+		//	int vertexColorLocation = glGetUniformLocation(shaderProgram, "uniformColor");
+		//	glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 		float timeValue = glfwGetTime();
-		float alpha = sin(timeValue) / 2 + 0.5f;
+		// float alpha = sin(timeValue) / 2 + 0.5f;
+		float alpha = 0;
 
-		mat4 model;
-		glm_mat4_identity(model);
-		vec3 rotation =  {1.0f, 0.0f, 0.0f};
-		glm_rotate(model, -55.0f * to_radians, rotation);
+		vec3 rotation =  {-1.0f, 1.0f, 0.0f};
+		glm_rotate(model, -1.0f * to_radians, rotation);
 		mat4 view;
 		glm_mat4_identity(view);
 		vec3 translation =  {0.0f, 0.0f, -3.0f};
 		glm_translate(view, translation);
 		mat4 projection;
 		glm_mat4_identity(projection);
-		glm_perspective(to_radians * (45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f, projection);
-		
+		glm_perspective(to_radians * (50.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f, projection);
 
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, *model);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, *view);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, *projection);
 		glUniform1f(glGetUniformLocation(shaderProgram, "alpha"),alpha);
@@ -251,7 +287,23 @@ int main(void)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		for(unsigned int i = 0; i < 30; i+=3)
+		{
+			mat4 model;
+			glm_mat4_identity(model);
+			vec3 translation = {
+				cubePositions[i],
+				cubePositions[i+1],
+				cubePositions[i+2],
+			};
+			glm_translate(model, translation);
+			vec3 rotation = {1.0f, 0.3f, 0.5f};
+			glm_rotate(model, to_radians * 20.0f * i, rotation);
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, *model);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
