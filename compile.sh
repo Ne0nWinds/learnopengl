@@ -1,2 +1,2 @@
 #!/bin/sh
-clang main.c -o main.exec `pkg-config --libs glfw3 glew` -lm
+gcc main.c -o main.exec -I/usr/include -lm `pkg-config --libs glfw3 glew --cflags cglm`

@@ -197,7 +197,7 @@ void loadTexture(unsigned int* texture, const char path[], bool transparent)
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
 	if (!data) {
 		stbi_image_free(data);
-		printf("failed to load texture\n");
+		printf("failed to load texture at path: %s\n", path);
 		exit(-1);
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearest neighbor minification
@@ -241,7 +241,6 @@ int main(void)
 	// allocate memory for texture in OpenGL
 	unsigned int texture1, texture2;
 	loadTexture(&texture1, "./textures/container.jpg", false);
-	loadTexture(&texture2, "./textures/playstation.png", true);
 
 	compileShader(&vertexShader, GL_VERTEX_SHADER, "./shaders/vertex.shader");
 	compileShader(&fragmentShader, GL_FRAGMENT_SHADER, "./shaders/fragment.shader");
@@ -334,7 +333,6 @@ int main(void)
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 	mat4 model;
 	glm_mat4_identity(model);
 	while (!glfwWindowShouldClose(window))
