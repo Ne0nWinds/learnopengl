@@ -9,9 +9,9 @@
 #include <cglm/call.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "./src/gl_functions.h"
+#include "gl_functions.h"
 
-unsigned int EBO ,VBO, VAO;
+unsigned int EBO ,VBO, VAO, lightVAO;
 unsigned int vertexShader, fragmentShader, shaderProgram;
 
 unsigned int windowWidth, windowHeight;
