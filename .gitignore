@@ -6,6 +6,5 @@ main.exec
 *.idx
 compile_commands.json
 
-# src files
-src/*
+# image files
 textures/*
