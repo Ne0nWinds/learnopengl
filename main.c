@@ -9,14 +9,16 @@
 #include <cglm/call.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "gl_functions.h"
+#include "./src/gl_functions.h"
 
 unsigned int EBO ,VBO, VAO, lightVAO;
 unsigned int vertexShader, fragmentShader, shaderProgram;
+unsigned int lightVertexShader, lightFragmentShader, lightShaderProgram;
 
 unsigned int windowWidth, windowHeight;
 
 const double to_radians = M_PI / 180;
+vec3 lightPos = { 1.2f, 1.0f, 2.0f };
 
 vec3 cameraPos = { 0.0f, 0.0f, 3.0f };
 vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
@@ -25,6 +27,7 @@ double pitch = 0;
 double yaw = 1;
 double lastX, lastY;
 const float mouse_sensitivity = 0.05f;
+
 float FOV = 45.0f;
 float move_speed = 2.5f;
 
@@ -144,8 +147,12 @@ int main(void)
 
 	compileShader(&vertexShader, GL_VERTEX_SHADER, "./shaders/vertex.shader");
 	compileShader(&fragmentShader, GL_FRAGMENT_SHADER, "./shaders/fragment.shader");
-
 	attachShaders(&shaderProgram, vertexShader, fragmentShader);
+
+	compileShader(&lightVertexShader, GL_VERTEX_SHADER, "./shaders/vertex.shader");
+	// compileShader(&lightFragmentShader, GL_FRAGMENT_SHADER, "./shaders/light_fragment.shader");
+	compileShader(&lightFragmentShader, GL_FRAGMENT_SHADER, "./shaders/lightfragment.shader");
+	attachShaders(&lightShaderProgram, lightVertexShader, lightFragmentShader);
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -192,26 +199,12 @@ int main(void)
 	};
 
 	float cubePositions[] = {
-		0.0f,  0.0f,  0.0f,
-		2.0f,  5.0f, -15.0f,
-		-1.5f, -2.2f, -2.5f,
-		-3.8f, -2.0f, -12.3f,
-		2.4f, -0.4f, -3.5f,
-		-1.7f,  3.0f, -7.5f,
-		1.3f, -2.0f, -2.5f,
-		1.5f,  2.0f, -2.5f,
-		1.5f,  0.2f, -1.5f,
-		-1.3f,  1.0f, -1.5f,
+		0.0f,  0.0f,  0.0f
 	};
 
-	// Allocate GPU Memory
-	glGenBuffers(1, &VBO);
+
 	glGenVertexArrays(1, &VAO);
-
-	// Start editing Vertex Array Object
-	glBindVertexArray(VAO);
-
-	// Copy vertices array to Vertex Buffer Object
+	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -224,22 +217,21 @@ int main(void)
 	// 		byte offset to first attribute
 	// 	)
 	// Set and enable aPos vec3 in shader
+
+	glBindVertexArray(VAO);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Set and enable aTextureCoord vec2 in shader
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
-	glUseProgram(shaderProgram);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
-	mat4 model;
-	glm_mat4_identity(model);
 	while (!glfwWindowShouldClose(window))
 	{
 
-		// Clear screen
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.12f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		double currentFrame = glfwGetTime();
@@ -248,8 +240,7 @@ int main(void)
 		float alpha = 0;
 		processInput(window);
 
-		vec3 rotation =  {-1.0f, 1.0f, 0.0f};
-		glm_rotate(model, -1.0f * to_radians, rotation);
+		glUseProgram(shaderProgram);
 
 		mat4 view;
 		glm_mat4_identity(view);
@@ -263,17 +254,14 @@ int main(void)
 
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, *view);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, *projection);
-		glUniform1f(glGetUniformLocation(shaderProgram, "alpha"),alpha);
-		// Uncomment line below to use wireframe Mode
-		// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-		glBindVertexArray(VAO);
-		// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		for(unsigned int i = 0; i < 30; i+=3)
+		vec3 coral = { 1.0f, 0.5f, 0.31f };
+		vec3 lightColor = { 1.0f, 1.0f, 1.0f };
+		glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, coral);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, lightColor);
+
+		glBindVertexArray(VAO);
+		for(unsigned int i = 0; i < sizeof(cubePositions) / sizeof(float); i+=3)
 		{
 			mat4 model;
 			glm_mat4_identity(model);
@@ -288,6 +276,19 @@ int main(void)
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, *model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		glUseProgram(lightShaderProgram);
+		mat4 model;
+		glm_mat4_identity(model);
+		glm_translate(model, lightPos);
+		vec3 lightSize = { 0.5f, 0.5f, 0.5f };
+		glm_scale(model, lightSize);
+		glUniform3fv(glGetUniformLocation(lightShaderProgram, "lightColor"), 1, lightColor);
+		glUniformMatrix4fv(glGetUniformLocation(lightShaderProgram, "model"), 1, GL_FALSE, *model);
+		glUniformMatrix4fv(glGetUniformLocation(lightShaderProgram, "view"), 1, GL_FALSE, *view);
+		glUniformMatrix4fv(glGetUniformLocation(lightShaderProgram, "projection"), 1, GL_FALSE, *projection);
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

@@ -41,10 +41,10 @@ char* readFile(const char path[])
 
 	return str;
 error:
-	free(str);
-	free(temp);
-	fclose(file);
 	printf("Error reading file at path:\n%s\n", path);
+	free(str);
+	if (len != 1) free(temp);
+	if (file) fclose(file);
 	exit(-1);
 }
 
