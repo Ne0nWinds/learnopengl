@@ -63,6 +63,7 @@ void compileShader(GLuint* shader,GLenum type,const char path[])
 	{
 		glGetShaderInfoLog(*shader, 512, NULL, infoLog);
 		fprintf(stderr, "Error compiling the %d shader: '%s'\n", type, infoLog);
+		printf("%s\n",path);
 		exit(-1);
 	}
 }
