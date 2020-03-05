@@ -19,6 +19,7 @@ unsigned int windowWidth, windowHeight;
 
 const double to_radians = M_PI / 180;
 vec3 lightPos = { 1.2f, 1.0f, 2.0f };
+float specularStrength = 0.5;
 
 vec3 cameraPos = { 0.0f, 0.0f, 3.0f };
 vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
@@ -258,9 +259,14 @@ int main(void)
 
 		vec3 coral = { 1.0f, 0.5f, 0.31f };
 		vec3 lightColor = { 1.0f, 1.0f, 1.0f };
-		glUniform3fv(glGetUniformLocation(shaderProgram, "objectColor"), 1, coral);
+		vec3 specular = { 0.5f, 0.5f, 0.5f };
 		glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, lightColor);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, lightPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, cameraPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 1, coral);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 1, specular);
+		glUniform1f(glGetUniformLocation(shaderProgram, "material.ambient"), 0.05f);
+		glUniform1f(glGetUniformLocation(shaderProgram, "material.shiniess"), 32.0f);
 
 		glBindVertexArray(VAO);
 		for(unsigned int i = 0; i < sizeof(cubePositions) / sizeof(float); i+=3)
