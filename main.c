@@ -258,15 +258,26 @@ int main(void)
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, *projection);
 
 		vec3 coral = { 1.0f, 0.5f, 0.31f };
-		vec3 lightColor = { 1.0f, 1.0f, 1.0f };
+		vec3 lightColor;
+		lightColor[0] = sin(currentFrame * 2.0f) * 0.5f + 1; // r
+		lightColor[1] = sin(currentFrame * 0.7f) * 0.5f + 1; // g
+		lightColor[2] = sin(currentFrame * 1.3f) * 0.5f + 1; // b
 		vec3 specular = { 0.5f, 0.5f, 0.5f };
 		glUniform3fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, lightColor);
-		glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, lightPos);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, cameraPos);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 1, coral);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 1, specular);
-		glUniform1f(glGetUniformLocation(shaderProgram, "material.ambient"), 0.05f);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 1, coral);
 		glUniform1f(glGetUniformLocation(shaderProgram, "material.shiniess"), 32.0f);
+		vec3 ambient = { 0.2f, 0.2f, 0.2f };
+		vec3 light_diffuse = { 0.75f, 0.75f, 0.75f };
+		glm_vec3_mul(lightColor, light_diffuse, light_diffuse);
+		glm_vec3_mul(lightColor, ambient, ambient);
+		vec3 light_specular = { 1.0f, 0.6f, 0.6f };
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.ambient"), 1, ambient);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.diffuse"), 1, light_diffuse);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.specular"), 1, light_specular);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
 
 		glBindVertexArray(VAO);
 		for(unsigned int i = 0; i < sizeof(cubePositions) / sizeof(float); i+=3)
