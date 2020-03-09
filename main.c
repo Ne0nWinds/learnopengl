@@ -266,15 +266,16 @@ int main(void)
 		glUniform1f(glGetUniformLocation(shaderProgram, "material.diffuse"), 0);
 		glUniform1f(glGetUniformLocation(shaderProgram, "material.specular"), 1);
 		vec3 ambient = { 0.15f, 0.15f, 0.15f };
-		vec3 light_diffuse = { 0.8f, 0.8f, 0.8f };
+		vec3 light_diffuse = { 1.0f, 1.0f, 1.0f };
 		glm_vec3_mul(lightColor, light_diffuse, light_diffuse);
 		glm_vec3_mul(lightColor, ambient, ambient);
 		vec3 light_specular = { 1.0f, 1.0f, 1.0f };
-		vec3 lightPos = { 2.0f * sin(currentFrame), 0.0f, 2.0f * cos(currentFrame) };
+		vec3 lightPos = { -0.2f, -1.0f, -0.3f };
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.ambient"), 1, ambient);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.diffuse"), 1, light_diffuse);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.specular"), 1, light_specular);
-		glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
+		// glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.direction"), 1, lightPos);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -291,6 +292,8 @@ int main(void)
 				cubePositions[i+2],
 			};
 			glm_translate(model, translation);
+			vec3 axis = { 1.0f, 0.3f, 0.5f };
+			glm_rotate(model, to_radians * 20.0f * i, axis);
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, *model);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
