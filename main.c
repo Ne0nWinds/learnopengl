@@ -197,11 +197,16 @@ int main(void)
 
 	float cubePositions[] = {
 		0.0f,  0.0f,  0.0f,
-		1.0f,  2.0f,  3.0f,
-		1.9f,  2.5f,  5.0f,
-		-1.0f,  2.0f,  2.0f,
+		2.0f,  5.0f, -15.0f,
+		-1.5f, -2.2f, -2.5f,
+		-3.8f, -2.0f, -12.3f,
+		2.4f, -0.4f, -3.5f,
+		-1.7f,  3.0f, -7.5f,
+		1.3f, -2.0f, -2.5f,
+		1.5f,  2.0f, -2.5f,
+		1.5f,  0.2f, -1.5f,
+		-1.3f,  1.0f, -1.5f
 	};
-
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -274,8 +279,10 @@ int main(void)
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.ambient"), 1, ambient);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.diffuse"), 1, light_diffuse);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.specular"), 1, light_specular);
-		// glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
-		glUniform3fv(glGetUniformLocation(shaderProgram, "light.direction"), 1, lightPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
+		glUniform1f(glGetUniformLocation(shaderProgram, "light.constant"), 1);
+		glUniform1f(glGetUniformLocation(shaderProgram, "light.linear"), 0.09f);
+		glUniform1f(glGetUniformLocation(shaderProgram, "light.quadratic"), 0.032f);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
