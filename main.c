@@ -279,7 +279,11 @@ int main(void)
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.ambient"), 1, ambient);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.diffuse"), 1, light_diffuse);
 		glUniform3fv(glGetUniformLocation(shaderProgram, "light.specular"), 1, light_specular);
-		glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, lightPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.position"), 1, cameraPos);
+		glUniform3fv(glGetUniformLocation(shaderProgram, "light.direction"), 1, cameraFront);
+
+		glUniform1f(glGetUniformLocation(shaderProgram, "light.cutOff"), cos(5.0f * to_radians));
+		glUniform1f(glGetUniformLocation(shaderProgram, "light.outerCutOff"), cos(14.5f * to_radians));
 		glUniform1f(glGetUniformLocation(shaderProgram, "light.constant"), 1);
 		glUniform1f(glGetUniformLocation(shaderProgram, "light.linear"), 0.09f);
 		glUniform1f(glGetUniformLocation(shaderProgram, "light.quadratic"), 0.032f);
